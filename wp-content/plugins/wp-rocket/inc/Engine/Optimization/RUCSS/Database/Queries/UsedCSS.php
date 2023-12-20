@@ -106,6 +106,7 @@ class UsedCSS extends Query {
 				'fields'         => [
 					'id',
 					'url',
+					'next_retry_time',
 				],
 				'job_id__not_in' => [
 					'not_in' => '',
@@ -162,20 +163,33 @@ class UsedCSS extends Query {
 	/**
 	 * Increment retries number and change status back to pending.
 	 *
-	 * @param int $id DB row ID.
-	 * @param int $retries Current number of retries.
+	 * @param int    $id DB row ID.
+	 * @param int    $error_code error code.
+	 * @param string $error_message error message.
 	 *
 	 * @return bool
 	 */
-	public function increment_retries( $id, $retries = 0 ) {
+	public function increment_retries( $id, int $error_code, string $error_message ) {
 		if ( ! self::$table_exists && ! $this->table_exists() ) {
 			return false;
 		}
 
+		$old = $this->get_item( $id );
+
+		$retries          = 0;
+		$previous_message = '';
+
+		if ( $old ) {
+			$retries          = $old->retries;
+			$previous_message = $old->error_message;
+		}
+
 		$update_data = [
-			'retries' => $retries + 1,
-			'status'  => 'pending',
+			'retries'       => $retries + 1,
+			'status'        => 'pending',
+			'error_message' => $previous_message . ' - ' . current_time( 'mysql', true ) . " {$error_code}: {$error_message}",
 		];
+
 		return $this->update_item( $id, $update_data );
 	}
 
@@ -219,7 +233,6 @@ class UsedCSS extends Query {
 			'status'        => 'to-submit',
 			'retries'       => 0,
 			'last_accessed' => current_time( 'mysql', true ),
-			'submitted_at'  => current_time( 'mysql', true ),
 		];
 		return $this->add_item( $item );
 	}
@@ -285,12 +298,16 @@ class UsedCSS extends Query {
 			return false;
 		}
 
+		$old = $this->get_item( $id );
+
+		$previous_message = $old ? $old->error_message : '';
+
 		return $this->update_item(
 			$id,
 			[
 				'status'        => 'failed',
 				'error_code'    => $error_code,
-				'error_message' => current_time( 'mysql', true ) . " {$error_code}: {$error_message}",
+				'error_message' => $previous_message . ' - ' . current_time( 'mysql', true ) . " {$error_code}: {$error_message}",
 			]
 		);
 	}
@@ -582,6 +599,31 @@ class UsedCSS extends Query {
 	}
 
 	/**
+	 * Updates the next_retry_time field
+	 *
+	 * @param mixed      $job_id the job id.
+	 * @param string|int $next_retry_time timestamp or mysql format date.
+	 *
+	 * @return bool either it is saved or not.
+	 */
+	public function update_next_retry_time( $job_id, $next_retry_time ): bool {
+		if ( is_string( $next_retry_time ) && strtotime( $next_retry_time ) ) {
+			// If $next_retry_time is a valid date string, convert it to a timestamp.
+			$next_retry_time = strtotime( $next_retry_time );
+		} elseif ( ! is_numeric( $next_retry_time ) ) {
+			// If it's not numeric and not a valid date string, return false.
+			return false;
+		}
+
+		return $this->update_item(
+			$job_id,
+			[
+				'next_retry_time' => gmdate( 'Y-m-d H:i:s', $next_retry_time ),
+			]
+		);
+	}
+
+	/**
 	 * Change the status to be pending.
 	 *
 	 * @param int    $id DB row ID.
@@ -598,10 +640,11 @@ class UsedCSS extends Query {
 		return $this->update_item(
 			$id,
 			[
-				'job_id'     => $job_id,
-				'queue_name' => $queue_name,
-				'status'     => 'pending',
-				'is_mobile'  => $is_mobile,
+				'job_id'       => $job_id,
+				'queue_name'   => $queue_name,
+				'status'       => 'pending',
+				'is_mobile'    => $is_mobile,
+				'submitted_at' => current_time( 'mysql', true ),
 			]
 		);
 	}

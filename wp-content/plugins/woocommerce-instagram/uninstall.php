@@ -18,7 +18,7 @@ defined( 'WP_UNINSTALL_PLUGIN' ) || exit;
  * @global wpdb $wpdb The WordPress Database Access Abstraction Object.
  */
 function wc_instagram_uninstall() {
-	require_once dirname( __FILE__ ) . '/includes/class-wc-instagram-uninstall.php';
+	require_once __DIR__ . '/includes/class-wc-instagram-uninstall.php';
 	WC_Instagram_Uninstall::uninstall();
 }
 wc_instagram_uninstall();

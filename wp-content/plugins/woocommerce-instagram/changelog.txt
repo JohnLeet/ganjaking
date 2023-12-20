@@ -1,5 +1,14 @@
 *** WooCommerce Instagram Changelog ***
 
+2023-11-22 - version 4.6.0
+* Feature - Declare compatibility with WooCommerce Cart and Checkout blocks.
+* Tweak - Check if the catalogs directory is writable in the System Status Report.
+* Tweak - Added trailing slash to the `WC_INSTAGRAM_CATALOGS_PATH` constant.
+* Tweak - Updated the plugin URLs to the new woo.com domain.
+* Tweak - Tested compatibility up to WC 8.3.
+* Dev - Fixed the default value provided as the third parameter in the filter hook `wc_instagram_product_parse_format`.
+* Dev - Renamed function parameters with reserved keywords to improve the compatibility with PHP 8.0.
+
 2023-10-18 - version 4.5.0
 * Feature - Added compatibility with 'WooCommerce Additional Variation Images'.
 * Tweak - Updated plugin author.

@@ -23,6 +23,7 @@ class MultipleKB extends Base {
 
     public $is_enable = false;
 
+
     public function __construct( PostType $type, Settings $settings ) {
         $this->post_type = $type;
         $this->settings  = $settings;
@@ -57,6 +58,22 @@ class MultipleKB extends Base {
         add_filter( 'betterdocs_archive_template_shortcode_params', [$this, 'archive_template_shortcode_params'], 11, 3 );
         add_filter( 'betterdocs_terms_meta_query_args', [$this, 'terms_meta_query'], 10, 4 );
         add_filter( 'betterdocs_breadcrumb_before_archives', [$this, 'breadcrumbs'], 20, 1 );
+        add_filter( 'rest_knowledge_base_collection_params', [$this, 'add_rest_orderby_params_on_knowledge_base'], 10, 1 );
+        add_filter( 'rest_knowledge_base_query', [$this, 'modify_knowledge_base_rest_query'], 10, 2 );
+    }
+
+    public function modify_knowledge_base_rest_query( $args, $request ) {
+        $order_by = $request->get_param( 'orderby' );
+        if ( isset( $order_by ) && 'kb_order' === $order_by ) {
+            $args['meta_key'] = $order_by;
+            $args['orderby']  = 'meta_value_num';
+        }
+        return $args;
+    }
+
+    public function add_rest_orderby_params_on_knowledge_base( $params ) {
+        $params['orderby']['enum'][] = 'kb_order';
+        return $params;
     }
 
     public function term_permalink($permalink, $term, $taxonomy, $params ) {
@@ -93,6 +110,13 @@ class MultipleKB extends Base {
         if( $_kb_slug === null ) {
             $knowledgebase_terms = wp_get_object_terms($post->ID, 'knowledge_base');
             $_kb_slug = is_array( $knowledgebase_terms ) && count( $knowledgebase_terms ) > 0 ? $knowledgebase_terms[0]->slug : 'non-knowledgebase';
+        }
+
+        //WPML related compatibility, change slug %knowledge_base% from docs/%knowledge_base% from single doc, when this docs/%knowledge_base%/%doc_category%/ is set for single permalink
+        if( is_single() && taxonomy_exists('knowledge_base') && is_plugin_active('sitepress-multilingual-cms/sitepress.php') ) {
+            $term_data = get_term_by( 'slug', $_kb_slug, 'knowledge_base' );
+            $term_slug = isset( $term_data->slug ) ? $term_data->slug : '';
+            return str_replace( '%knowledge_base%', $term_slug, $url );
         }
 
         return str_replace( '%knowledge_base%', $_kb_slug, $url );
@@ -255,7 +279,7 @@ class MultipleKB extends Base {
 
     public function docs_tax_query_args( $tax_query, $_multiple_kb, $_term_slug, $_kb_slug, $_origin_args ) {
         global $wp_query;
-        if ( isset( $_origin_args['s'] ) && $this->settings->get( 'kb_based_search', false ) ) {
+        if ( isset( $_origin_args['s'] ) && $this->settings->get( 'kb_based_search', false ) && ! is_post_type_archive( 'docs' ) ) {
             $tax_query[] = [
                 'taxonomy'         => 'knowledge_base',
                 'field'            => 'slug',
@@ -406,10 +430,10 @@ class MultipleKB extends Base {
     public function internal_kb_settings( $settings ) {
         $settings['restrict_kb'] = [
             'name'        => 'restrict_kb',
-            'type'        => 'select',
+            'type'        => 'checkbox-select',
             'label'       => __( 'Restriction on Knowledge Bases', 'betterdocs-pro' ),
-            'help'        => __( '<strong>Note:</strong> Selected Knowledge Bases will be restricted  ', 'betterdocs-pro' ),
-            'priority'    => 4,
+            'label_subtitle'        => __( 'Selected Knowledge Bases will be restricted  ', 'betterdocs-pro' ),
+            'priority'    => 8,
             'is_pro'      => true,
             'multiple'    => true,
             'default'     => 'all',

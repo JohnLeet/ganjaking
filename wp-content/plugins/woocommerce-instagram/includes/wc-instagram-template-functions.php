@@ -85,19 +85,20 @@ function wc_instagram_set_loop_prop( $prop, $value = '' ) {
  * Inspired by the `wc_get_loop_prop` function.
  *
  * @since 2.0.0
+ * @since 4.6.0 Renamed parameter `$default` to `$default_value`.
  *
  * @global array $wc_instagram_loop The Instagram loop.
  *
- * @param string $prop Prop to get.
- * @param string $default Default if the prop does not exist.
+ * @param string $prop          Prop to get.
+ * @param string $default_value Default if the prop does not exist.
  * @return mixed
  */
-function wc_instagram_get_loop_prop( $prop, $default = '' ) {
+function wc_instagram_get_loop_prop( $prop, $default_value = '' ) {
 	global $wc_instagram_loop;
 
 	wc_instagram_setup_loop(); // Ensure loop is set up.
 
-	return ( ( is_array( $wc_instagram_loop ) && ! empty( $wc_instagram_loop[ $prop ] ) ) ? $wc_instagram_loop[ $prop ] : $default );
+	return ( ( is_array( $wc_instagram_loop ) && ! empty( $wc_instagram_loop[ $prop ] ) ) ? $wc_instagram_loop[ $prop ] : $default_value );
 }
 
 /**
@@ -113,7 +114,7 @@ function wc_instagram_get_loop_class() {
 	$loop_index = wc_instagram_get_loop_prop( 'loop', 0 );
 	$columns    = absint( max( 1, wc_instagram_get_loop_prop( 'columns' ) ) );
 
-	$loop_index ++;
+	++$loop_index;
 	wc_instagram_set_loop_prop( 'loop', $loop_index );
 
 	if ( 0 === ( $loop_index - 1 ) % $columns || 1 === $columns ) {
@@ -132,9 +133,9 @@ function wc_instagram_get_loop_class() {
  *
  * @since 2.0.0
  *
- * @param string|array $class Optional. One or more classes to add to the class list.
+ * @param string|array $classname Optional. One or more classes to add to the class list.
  */
-function wc_instagram_image_class( $class = '' ) {
+function wc_instagram_image_class( $classname = '' ) {
 	$classes = array(
 		'wc-instagram-loop-item',
 		'instagram', // Backward compatibility.
@@ -142,12 +143,12 @@ function wc_instagram_image_class( $class = '' ) {
 		wc_instagram_get_loop_class(),
 	);
 
-	if ( $class ) {
-		if ( ! is_array( $class ) ) {
-			$class = preg_split( '#\s+#', $class );
+	if ( $classname ) {
+		if ( ! is_array( $classname ) ) {
+			$classname = preg_split( '#\s+#', $classname );
 		}
 
-		$classes = array_merge( $classes, array_map( 'esc_attr', $class ) );
+		$classes = array_merge( $classes, array_map( 'esc_attr', $classname ) );
 	}
 
 	/**

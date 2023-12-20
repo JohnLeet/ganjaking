@@ -184,7 +184,7 @@ class WC_Instagram_Settings_General extends WC_Instagram_Settings_API {
 			$description = sprintf(
 				/* translators: 1: documentation link, 2: arial-label */
 				_x( 'We strongly recommend you to read our <a href="%1$s" aria-label="%2$s" target="_blank">documentation</a> before connecting your account.', 'setting desc', 'woocommerce-instagram' ),
-				esc_url( 'https://woocommerce.com/document/woocommerce-instagram/' ),
+				esc_url( 'https://woo.com/document/woocommerce-instagram/' ),
 				esc_attr_x( 'View WooCommerce Instagram documentation', 'aria-label: documentation link', 'woocommerce-instagram' )
 			);
 
@@ -376,7 +376,7 @@ class WC_Instagram_Settings_General extends WC_Instagram_Settings_API {
 			$account = wc_instagram_get_business_account_from_page( $value );
 
 			if ( ! $account ) {
-				throw new Exception( _x( "The selected Facebook Page doesn't have an Instagram Business Account connected to it.", 'settings error', 'woocommerce-instagram' ) );
+				throw new Exception( esc_html_x( "The selected Facebook Page doesn't have an Instagram Business Account connected to it.", 'settings error', 'woocommerce-instagram' ) );
 			} elseif ( ! empty( $account ) ) {
 				$this->settings['instagram_business_account'] = $account;
 			}

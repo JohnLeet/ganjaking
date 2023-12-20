@@ -172,7 +172,7 @@ class WC_Instagram_Background_Generate_Catalog extends WC_Instagram_Background_P
 
 				foreach ( $product_item as $variation ) {
 					$catalog_file->add_item( $variation );
-					$data['variation_offset']++;
+					++$data['variation_offset'];
 
 					update_option( $data_option, $data );
 				}
@@ -180,7 +180,7 @@ class WC_Instagram_Background_Generate_Catalog extends WC_Instagram_Background_P
 				$catalog_file->add_item( $product_item );
 			}
 
-			$data['offset']++;
+			++$data['offset'];
 			$data['variation_offset'] = 0;
 
 			update_option( $data_option, $data );

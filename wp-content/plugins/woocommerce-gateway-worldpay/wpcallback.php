@@ -1,5 +1,5 @@
 <?php
-		$order 				  = '';
+		$orderid 			  = '';
 		$transId 			  = '';
 		$transStatus 		  = '';
 		$transTime 			  = '';
@@ -34,7 +34,7 @@
 			$woocommerce_worldpay_settings 	= get_option( 'woocommerce_worldpay_settings' );
 			$settings_callbackPW			= $woocommerce_worldpay_settings['callbackPW'];
 
-			$order 				  = addslashes( $_REQUEST["MC_order"] );
+			$orderid 			  = addslashes( $_REQUEST["MC_order"] );
 			$transId 			  = addslashes( $_REQUEST["transId"] );
 			$transStatus 		  = addslashes( $_REQUEST["transStatus"] ); 	// (Y or C)
 			$transTime 			  = addslashes( $_REQUEST["transTime"] );   	// (UnixTime)
@@ -51,7 +51,7 @@
 			$MC_transactionNumber = addslashes( $_REQUEST["MC_transactionNumber"] );
 
 			if ( isset($_POST["futurePayId"]) ) {
-				$futurePayId		  = addslashes( $_REQUEST["futurePayId"] );
+				$futurePayId	  = addslashes( $_REQUEST["futurePayId"] );
 			}
 
 			if ( isset($_POST["futurePayStatusChange"]) ) {
@@ -64,10 +64,12 @@
     						 : "https://".$_SERVER['SERVER_NAME'].$_SERVER['REQUEST_URI'];
 							 
 			$subscriptionurl = str_replace( 'wp-content/plugins/woocommerce-gateway-worldpay/wpcallback.php','',$subscriptionurl );
-			$subscriptionurl = $subscriptionurl . '&wc-api=WC_Gateway_Worldpay_Form';
+			$subscriptionurl = add_query_arg( array(
+								    'wc-api' => 'WC_Gateway_Worldpay_Form'
+								), $subscriptionurl );
 			
 			$worldpay_args_array = array(
-				'order' 			  	=> $order,
+				'orderid' 			  	=> $orderid,
 				'transId' 				=> $transId,
 				'transStatus' 			=> $transStatus,
 				'transTime' 			=> $transTime,
@@ -105,19 +107,19 @@
 				if ( (class_exists( 'WC_Subscriptions' ) && $futurePayStatusChange == 'Merchant Cancelled') || (class_exists( 'WC_Subscriptions' ) && $futurePayStatusChange == 'Customer Cancelled') ) {
 					$order->add_order_note( __('WorldPay Subscription Notice : ' . $futurePayStatusChange, 'woothemes') );
 					// Cancel the subscription
-					WC_Subscriptions_Manager::cancel_subscriptions_for_order( $order->id );
+					WC_Subscriptions_Manager::cancel_subscriptions_for_order( $order->get_id() );
 				}
 				
 				if ( $rawAuthCode == 'D' && class_exists( 'WC_Subscriptions' ) ) {
 					// Record failed payment
-					WC_Subscriptions_Manager::process_subscription_payment_failure_on_order( $order->id );
+					WC_Subscriptions_Manager::process_subscription_payment_failure_on_order( $order->get_id() );
 					// Cancel the subscription
-					WC_Subscriptions_Manager::cancel_subscriptions_for_order( $order->id );				
+					WC_Subscriptions_Manager::cancel_subscriptions_for_order( $order->get_id() );				
 				}
 				
 				if ( $rawAuthCode == 'A' && class_exists( 'WC_Subscriptions' ) ) {
 					// Record successful payment
-					WC_Subscriptions_Manager::process_subscription_payments_on_order( $order->id );				
+					WC_Subscriptions_Manager::process_subscription_payments_on_order( $order->get_id() );				
 				}
 
 			 	/**
@@ -131,12 +133,12 @@
 					$orderNotes .=	'<br /><!-- FUTURE PAY-->';
 					$orderNotes .=	'<br />FuturePayID : ' 	. $futurePayId;
 					$orderNotes .=	'<br /><!-- FUTURE PAY-->';
-					update_post_meta( $order->id, '_futurepayid', $futurePayId );
-				} elseif( class_exists( 'WC_Subscriptions' ) && WC_Subscriptions_Order::order_contains_subscription( $order->id ) ) {
+					$order->update_meta_data( '_futurepayid', $futurePayId );
+				} elseif( class_exists( 'WC_Subscriptions' ) && WC_Subscriptions_Order::order_contains_subscription( $order->get_id() ) ) {
 					$orderNotes .=	'<br /><!-- FUTURE PAY-->';
 					$orderNotes .=	'<br />FuturePayID : ' 	. $futurePayId;
 					$orderNotes .=	'<br /><!-- FUTURE PAY-->';
-					update_post_meta( $order->id, '_futurepayid', $futurePayId );
+					$order->update_meta_data( '_futurepayid', $futurePayId );
 				}
 
 				$orderNotes .=	'<br />transId : ' 			. $transId;
@@ -152,8 +154,12 @@
 				$orderNotes .=	'<br />AVS : ' 				. $AVS;
 				
 				$order->add_order_note( __('WorldPay payment completed.' . $orderNotes, 'woothemes') );
+
+				$order->save();
 				
 			} else {
+
+				$order 	 = new WC_Order( (int) $orderid );
 
 				/**
 				 * This is an ordinary payment, carry on
@@ -163,16 +169,20 @@
 					$worldpay_args[] = "$param=$value";
 				}
 
-				$worldpay_args 		= implode('&', $worldpay_args);
+				$worldpay_args 		= implode( '&', $worldpay_args );
 
 				$worldpaycrypt_b64  = $worldpay_args;
 				$worldpaycrypt_b64 	= worldpaysimpleXor( $worldpaycrypt_b64, $settings_callbackPW );
 				$worldpaycrypt_b64 	= base64_encode( $worldpaycrypt_b64 );
 
 				// Save callback info to database
-				update_post_meta( $order, '_worldpay_crypt', $worldpaycrypt_b64 );
-			
-				$url 				= $subscriptionurl .'&order='. $order .'&callback=y';
+				$order->update_meta_data( '_worldpay_crypt', $worldpaycrypt_b64 );
+				$order->save();
+
+				$url 				= add_query_arg( array(
+										    'order' => $orderid,
+										    'callback' => 'y',
+										), $subscriptionurl );
 				
         		echo "<meta http-equiv='Refresh' content='1; Url=\"$url\"'>";
 				

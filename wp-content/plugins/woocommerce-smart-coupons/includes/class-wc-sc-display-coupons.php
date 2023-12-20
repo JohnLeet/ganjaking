@@ -4,7 +4,7 @@
  *
  * @author      StoreApps
  * @since       3.3.0
- * @version     3.7.0
+ * @version     4.0.0
  *
  * @package     woocommerce-smart-coupons/includes/
  */
@@ -43,7 +43,7 @@ if ( ! class_exists( 'WC_SC_Display_Coupons' ) ) {
 			add_action( 'wp_ajax_nopriv_sc_get_available_coupons', array( $this, 'get_available_coupons_html' ) );
 
 			add_action( 'woocommerce_after_add_to_cart_button', array( $this, 'show_attached_gift_certificates' ) );
-			add_action( 'woocommerce_after_shop_loop_item', array( $this, 'remove_add_to_cart_button_from_shop_page' ) );
+			add_filter( 'woocommerce_loop_add_to_cart_link', array( $this, 'override_add_to_cart_button' ), 10, 3 );
 
 			add_action( 'woocommerce_after_cart_table', array( $this, 'show_available_coupons_after_cart_table' ) );
 			add_action( 'woocommerce_before_checkout_form', array( $this, 'show_available_coupons_before_checkout_form' ), 11 );
@@ -694,39 +694,32 @@ if ( ! class_exists( 'WC_SC_Display_Coupons' ) ) {
 
 		/**
 		 * Replace Add to cart button with Select Option button for products which are created for purchasing credit, on shop page
+		 *
+		 * @param string           $html Original add to cart button HTML.
+		 * @param mixed|WC_Product $product The product object.
+		 * @param array            $args Additional arguments.
+		 * @return string HTML of add to cart button
 		 */
-		public function remove_add_to_cart_button_from_shop_page() {
-			global $product;
+		public function override_add_to_cart_button( $html = '', $product = null, $args = array() ) {
 
-			if ( ! is_a( $product, 'WC_Product' ) ) {
-				return;
+			if ( is_null( $product ) || empty( $product ) || ! $product instanceof WC_Product ) {
+				return $html;
 			}
-
-			if ( $this->is_wc_gte_30() ) {
-				$product_id = ( is_object( $product ) && is_callable( array( $product, 'get_id' ) ) ) ? $product->get_id() : 0;
-			} else {
-				$product_id = ( ! empty( $product->id ) ) ? $product->id : 0;
-			}
-
 			$coupons = $this->get_coupon_titles( array( 'product_object' => $product ) );
-
-			if ( ! empty( $coupons ) && $this->is_coupon_amount_pick_from_product_price( $coupons ) && ! ( $product->get_price() > 0 ) ) {
-
-				$js = "
-						var target_class = 'wc_sc_loop_button_" . $product_id . "';
-						var wc_sc_loop_button = jQuery('.' + target_class);
-						var wc_sc_old_element = jQuery(wc_sc_loop_button).siblings('a[data-product_id=" . $product_id . "]');
-						var wc_sc_loop_button_classes = wc_sc_old_element.attr('class');
-						wc_sc_loop_button.removeClass( target_class ).addClass( wc_sc_loop_button_classes ).show();
-						wc_sc_old_element.remove();
-					";
-
-				wc_enqueue_js( $js );
-
-				?>
-				<a href="<?php echo esc_url( the_permalink() ); ?>" class="wc_sc_loop_button_<?php echo esc_attr( $product_id ); ?>" style="display: none;"><?php echo esc_html( get_option( 'sc_gift_certificate_shop_loop_button_text', __( 'Select options', 'woocommerce-smart-coupons' ) ) ); ?></a>
-				<?php
+			if ( empty( $coupons ) ) {
+				return $html;
 			}
+			if ( $this->is_coupon_amount_pick_from_product_price( $coupons ) && ! ( $product->get_price() > 0 ) ) {
+
+				$html = sprintf(
+					'<a href="%s" class="%s">%s</a>',
+					esc_url( $product->get_permalink() ),
+					esc_attr( ! empty( $args['class'] ) ? $args['class'] : 'button' ),
+					esc_html( get_option( 'sc_gift_certificate_shop_loop_button_text', __( 'Select options', 'woocommerce-smart-coupons' ) ) )
+				);
+
+			}
+			return $html;
 		}
 
 		/**
@@ -1936,7 +1929,7 @@ if ( ! class_exists( 'WC_SC_Display_Coupons' ) ) {
 				if ( empty( $data ) ) {
 					continue;
 				}
-				$from = ( true === $is_callable_order_get_meta ) ? $order->get_billing_email() : get_post_meta( $id, '_billing_email', true );
+				$from = $this->is_callable( $order, 'get_billing_email' ) ? $order->get_billing_email() : get_post_meta( $id, '_billing_email', true );
 				if ( empty( $generated_coupon_data[ $from ] ) ) {
 					$generated_coupon_data[ $from ] = array();
 				}
@@ -1981,6 +1974,64 @@ if ( ! class_exists( 'WC_SC_Display_Coupons' ) ) {
 							'message'  => ( ! empty( $coupon_receiver_details['message_from_sender'] ) ) ? $coupon_receiver_details['message_from_sender'] : '',
 							'order_id' => ( ! empty( $order_id ) ) ? $order_id : 0,
 						);
+					}
+				}
+				if ( empty( $generated_coupon_data ) ) {
+					$order         = ( ! empty( $order_id ) ) ? wc_get_order( $order_id ) : null;
+					$order_actions = array();
+					if ( ! class_exists( 'WC_SC_Coupon_Process' ) ) {
+						include_once 'class-wc-sc-coupon-process.php';
+					}
+					$wc_sc_coupon_process = ( is_callable( 'WC_SC_Coupon_Process::get_instance' ) ) ? WC_SC_Coupon_Process::get_instance() : null;
+					if ( $this->is_callable( $wc_sc_coupon_process, 'order_actions' ) ) {
+						$order_actions = $wc_sc_coupon_process->order_actions( array(), $order );
+					}
+					?>
+					<p>
+						<?php
+							/* translators: 1. Link to jump to 'Order actions' metabox 2. Text 'Order actions' 3. Text 'arrow' */
+							echo sprintf( esc_html_x( 'Coupons are not generated for this order. You can regenerate it from %1$s. Select an appropriate action from the %2$s dropdown menu and hit the %3$s button next to it.', 'Generated coupons metabox - Order edit admin page', 'woocommerce-smart-coupons' ), '<strong><a href="#woocommerce-order-actions">' . esc_html_x( 'Order actions', 'Generated coupons metabox - Order edit admin page', 'woocommerce-smart-coupons' ) . '</a></strong>', '<strong>' . esc_html_x( 'Order actions', 'Generated coupons metabox - Order edit admin page', 'woocommerce-smart-coupons' ) . '</strong>', '<strong>' . esc_html_x( 'arrow', 'Generated coupons metabox - Order edit admin page', 'woocommerce-smart-coupons' ) . '</strong>' );
+						?>
+					</p>
+					<?php
+					if ( ! empty( $order_actions ) ) {
+						$target_actions   = array( 'wc_sc_regenerate_coupons', 'wc_sc_regenerate_resend_coupons' );
+						$all_actions      = array_keys( $order_actions );
+						$action_intersect = array_intersect( $target_actions, $all_actions );
+						if ( ! empty( $action_intersect ) ) {
+							?>
+							<div>
+								<ul class="ul-disc">
+									<?php
+									foreach ( $order_actions as $action => $label ) {
+										switch ( $action ) {
+											case 'wc_sc_regenerate_coupons':
+												?>
+												<li>
+													<?php
+														/* translators: 1. Label for Order action for regenerating coupons */
+														echo sprintf( esc_html_x( 'Select %s to only regenerate coupons. No email will be sent for this.', 'Generated coupons metabox - Order edit admin page', 'woocommerce-smart-coupons' ), '<strong>' . esc_html( $label ) . '</strong>' );
+													?>
+												</li>
+												<?php
+												break;
+											case 'wc_sc_regenerate_resend_coupons':
+												?>
+												<li>
+													<?php
+														/* translators: 1. Label for Order action for regenerating & resending coupons */
+														echo sprintf( esc_html_x( 'Select %s to regenerate as well as resend coupons to the recipients via email.', 'Generated coupons metabox - Order edit admin page', 'woocommerce-smart-coupons' ), '<strong>' . esc_html( $label ) . '</strong>' );
+													?>
+												</li>
+												<?php
+												break;
+										}
+									}
+									?>
+								</ul>
+							</div>
+							<?php
+						}
 					}
 				}
 			}
@@ -2420,9 +2471,13 @@ if ( ! class_exists( 'WC_SC_Display_Coupons' ) ) {
 		 * Metabox on Order Edit Admin page to show generated coupons during the order
 		 */
 		public function add_generated_coupon_details() {
-			global $post;
+			global $post, $theorder;
 
-			$post_type = ( ! empty( $post->ID ) ) ? $this->get_post_type( $post->ID ) : $this->get_post_type();
+			if ( is_a( $theorder, 'WC_Order' ) ) {
+				$post_type = 'shop_order';
+			} elseif ( ! empty( $post->ID ) ) {
+				$post_type = ( ! empty( $post->ID ) ) ? $this->get_post_type( $post->ID ) : $this->get_post_type();
+			}
 
 			if ( empty( $post_type ) || 'shop_order' !== $post_type ) {
 				return;
@@ -2437,9 +2492,10 @@ if ( ! class_exists( 'WC_SC_Display_Coupons' ) ) {
 		 * Metabox content (Generated coupon's details)
 		 */
 		public function sc_generated_coupon_data_metabox() {
-			global $post;
-			if ( ! empty( $post->ID ) ) {
-				$this->get_generated_coupon_data( $post->ID, '', true, false );
+			global $post, $theorder;
+			$order_id = ( is_object( $theorder ) && is_a( $theorder, 'WC_Order' ) && $this->is_callable( $theorder, 'get_id' ) ) ? $theorder->get_id() : ( ! empty( $post->ID ) ? $post->ID : 0 );
+			if ( ! empty( $order_id ) ) {
+				$this->get_generated_coupon_data( $order_id, '', true, false );
 			}
 		}
 

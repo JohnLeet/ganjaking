@@ -63,7 +63,7 @@ class WC_Instagram_Install {
 		add_action( 'admin_init', array( __CLASS__, 'install_actions' ) );
 		add_action( 'admin_init', array( __CLASS__, 'add_notices' ), 20 );
 		add_action( 'wc_instagram_updater_complete', array( __CLASS__, 'updated' ) );
-		add_action( 'update_option_wc_instagram_db_version', array( __CLASS__, 'add_feature_notices' ), 10, 2 );
+		add_action( 'update_option_wc_instagram_db_version', array( __CLASS__, 'add_feature_notices' ) );
 	}
 
 	/**
@@ -173,9 +173,8 @@ class WC_Instagram_Install {
 	 * @since 3.0.0
 	 *
 	 * @param string $old_version The old version.
-	 * @param string $new_version The new version.
 	 */
-	public static function add_feature_notices( $old_version, $new_version ) {
+	public static function add_feature_notices( $old_version ) {
 		// It's a new installation.
 		if ( ! $old_version ) {
 			return;
@@ -366,14 +365,14 @@ class WC_Instagram_Install {
 		);
 
 		foreach ( $files as $file ) {
-			$filename = trailingslashit( $file['base'] ) . $file['file'];
+			$filename = $file['base'] . $file['file'];
 
 			if ( wp_mkdir_p( $file['base'] ) && ! file_exists( $filename ) ) {
-				$file_handle = @fopen( $filename, 'wb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_read_fopen
+				$file_handle = @fopen( $filename, 'wb' ); // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 
 				if ( $file_handle ) {
-					fwrite( $file_handle, $file['content'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
-					fclose( $file_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+					fwrite( $file_handle, $file['content'] ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
+					fclose( $file_handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 				}
 			}
 		}

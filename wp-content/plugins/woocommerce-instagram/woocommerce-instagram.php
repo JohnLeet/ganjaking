@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name: WooCommerce Instagram
- * Plugin URI: https://woocommerce.com/products/woocommerce-instagram/
+ * Plugin URI: https://woo.com/products/woocommerce-instagram/
  * Description: Connect your store with Instagram. Upload your product catalog to Instagram and showcase how your customers are using them.
- * Version: 4.5.0
+ * Version: 4.6.0
  * Author: KoiLab
  * Author URI: https://koilab.com/
  * Requires PHP: 5.6
@@ -13,7 +13,7 @@
  * Domain Path: /languages/
  *
  * WC requires at least: 3.7
- * WC tested up to: 8.2
+ * WC tested up to: 8.3
  * Woo: 260061:ecaa2080668997daf396b8f8a50d891a
  *
  * License: GNU General Public License v3.0
@@ -29,7 +29,7 @@ defined( 'ABSPATH' ) || exit;
  * Plugin requirements.
  */
 if ( ! class_exists( 'WC_Instagram_Requirements', false ) ) {
-	require_once dirname( __FILE__ ) . '/includes/class-wc-instagram-requirements.php';
+	require_once __DIR__ . '/includes/class-wc-instagram-requirements.php';
 }
 
 if ( ! WC_Instagram_Requirements::are_satisfied() ) {
@@ -43,7 +43,7 @@ if ( ! defined( 'WC_INSTAGRAM_FILE' ) ) {
 
 // Include the main plugin class.
 if ( ! class_exists( 'WC_Instagram' ) ) {
-	include_once dirname( __FILE__ ) . '/includes/class-wc-instagram.php';
+	include_once __DIR__ . '/includes/class-wc-instagram.php';
 }
 
 /**

@@ -45,16 +45,16 @@ if ( ! class_exists( 'WC_Instagram_Autoloader' ) ) {
 		 *
 		 * @since 2.0.0
 		 *
-		 * @param string $class The class to load.
+		 * @param string $classname The class to load.
 		 */
-		public function autoload( $class ) {
-			$class = strtolower( $class );
+		public function autoload( $classname ) {
+			$classname = strtolower( $classname );
 
-			if ( 0 !== strpos( $class, 'wc_instagram_' ) ) {
+			if ( 0 !== strpos( $classname, 'wc_instagram_' ) ) {
 				return;
 			}
 
-			$file = $this->get_file_name_from_class( $class );
+			$file = $this->get_file_name_from_class( $classname );
 
 			/**
 			 * Filters autoload classes.
@@ -82,7 +82,7 @@ if ( ! class_exists( 'WC_Instagram_Autoloader' ) ) {
 			);
 
 			foreach ( $autoload as $prefix => $path ) {
-				if ( 0 === strpos( $class, $prefix ) && $this->load_file( $path . $file ) ) {
+				if ( 0 === strpos( $classname, $prefix ) && $this->load_file( $path . $file ) ) {
 					break;
 				}
 			}
@@ -93,11 +93,11 @@ if ( ! class_exists( 'WC_Instagram_Autoloader' ) ) {
 		 *
 		 * @since 2.0.0
 		 *
-		 * @param  string $class The class name.
+		 * @param string $classname The class name.
 		 * @return string The file name.
 		 */
-		private function get_file_name_from_class( $class ) {
-			return 'class-' . str_replace( '_', '-', $class ) . '.php';
+		private function get_file_name_from_class( $classname ) {
+			return 'class-' . str_replace( '_', '-', $classname ) . '.php';
 		}
 
 		/**
@@ -117,7 +117,6 @@ if ( ! class_exists( 'WC_Instagram_Autoloader' ) ) {
 
 			return false;
 		}
-
 	}
 }
 

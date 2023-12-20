@@ -54,6 +54,20 @@
 			<td class="help"></td>
 			<td colspan="3"><?php echo esc_html( $data['catalogs_interval'] ); ?>h</td>
 		</tr>
+		<tr>
+			<td data-export-label="Catalog directory writable"><?php esc_html_e( 'Catalog directory writable', 'woocommerce-instagram' ); ?>:</td>
+			<td class="help"></td>
+			<td colspan="3">
+				<?php
+				if ( $data['catalog_directory_writable'] ) {
+					echo '<mark class="yes"><span class="dashicons dashicons-yes"></span> <code class="private">' . esc_html( $data['catalog_directory'] ) . '</code></mark> ';
+				} else {
+					/* Translators: %1$s: Catalog directory, %2$s: Catalog directory constant */
+					echo '<mark class="error"><span class="dashicons dashicons-warning"></span> ' . sprintf( esc_html__( 'Make %1$s writable or define a custom %2$s.', 'woocommerce-instagram' ), '<code>' . esc_html( $data['catalog_directory'] ) . '</code>', '<code>WC_INSTAGRAM_CATALOGS_PATH</code>' ) . '</mark>';
+				}
+				?>
+			</td>
+		</tr>
 	</tbody>
 </table>
 <?php

@@ -69,7 +69,7 @@ abstract class WC_Instagram_Product_Catalog_Format {
 		$product_catalog = wc_instagram_get_product_catalog( $the_catalog );
 
 		if ( ! $product_catalog instanceof WC_Instagram_Product_Catalog ) {
-			throw new Exception( _x( 'Invalid product catalog.', 'exception message', 'woocommerce-instagram' ) );
+			throw new Exception( esc_html_x( 'Invalid product catalog.', 'exception message', 'woocommerce-instagram' ) );
 		}
 
 		$args = wp_parse_args(

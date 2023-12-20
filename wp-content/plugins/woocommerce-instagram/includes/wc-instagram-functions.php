@@ -172,15 +172,16 @@ function wc_instagram_get_settings() {
  * Gets a setting value.
  *
  * @since 2.0.0
+ * @since 4.6.0 Renamed parameter `$default` to `$default_value`.
  *
- * @param string $name    The setting name.
- * @param mixed  $default Optional. The default value.
+ * @param string $name          The setting name.
+ * @param mixed  $default_value Optional. The default value.
  * @return mixed The setting value.
  */
-function wc_instagram_get_setting( $name, $default = null ) {
+function wc_instagram_get_setting( $name, $default_value = null ) {
 	$settings = wc_instagram_get_settings();
 
-	return ( isset( $settings[ $name ] ) ? $settings[ $name ] : $default );
+	return ( isset( $settings[ $name ] ) ? $settings[ $name ] : $default_value );
 }
 
 /**

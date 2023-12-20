@@ -380,6 +380,8 @@ class Plugin {
 			'wpgeotargeting',
 			'lazyload_css_subscriber',
 			'shoptimizer',
+			'weglot',
+			'contactform7',
 		];
 
 		$host_type = HostResolver::get_host_service();

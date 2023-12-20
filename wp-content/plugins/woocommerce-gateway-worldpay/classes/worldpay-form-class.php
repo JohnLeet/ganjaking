@@ -4,6 +4,9 @@
 		exit; // Exit if accessed directly
 	}
 
+	// Blocks
+	use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
+
 	// HPOS
 	use Automattic\WooCommerce\Utilities\OrderUtil;
 
@@ -13,6 +16,67 @@
      * @extends WC_Payment_Gateway
      */
 	class WC_Gateway_Worldpay_Form extends WC_Payment_Gateway {
+
+		private $default_enabled;
+		private $default_title;
+		private $default_description;
+		private $default_order_button_text;
+		private $default_status;
+		private $default_wplogo;
+		private $default_vmelogo;
+		private $default_cardtypes;
+		private $default_instId;
+		private $default_callbackPW;
+		private $default_orderDesc;
+		private $default_accid;
+		private $default_authMode;
+		private $default_fixContact;
+		private $default_hideContact;
+		private $default_hideCurrency;
+		private $default_lang;
+		private $default_noLanguageMenu;
+		private $default_remoteid;
+		private $default_remotepw;
+		private $default_worldpaymd5;
+		private $default_signaturefields;
+		private $default_debug;
+		private $default_dynamiccallback;
+		private $default_submission;
+		private $default_method;
+		private $default_addgautm;
+		private $default_withDelivery;
+
+		public $enabled;
+		public $title;
+		public $description ;
+		public $order_button_text;
+  		private $status;
+  		private $wplogo;
+  		private $vmelogo;
+  		private $cardtypes;
+		private $instId;
+		private $callbackPW;
+		private $orderDesc;
+		private $accid;
+		private $authMode;
+		private $fixContact;
+		private $hideContact;
+		private $hideCurrency;
+		private $lang;
+		private $noLanguageMenu;
+		private $remoteid;
+		private $remotepw;
+		private $worldpaymd5;
+		private $signaturefields;
+		private $dynamiccallback;
+		private $submission;
+		private $method;
+		private $addgautm;
+		private $debug;
+		private $worldpaydebug;
+		private $worldpaydebugemail;
+		private $clean_array;
+		public $log;
 
 		/**
 	 	 * Get all the options and constants
@@ -448,10 +512,10 @@
 			// The old way, this is coming in from wpcallback.php
 			elseif ( isset( $_GET["order"] ) && $_GET["callback"] == 'y' ) {
 
-				$worldpay_order 		= absint( intval( $_GET["order"] ) );
+				$order_id 				= wc_clean( absint( intval( $_GET["order"] ) ) );
+				$order					= wc_get_order( $order_id );
 
-				// $worldpaycrypt_b64		= get_post_meta( $worldpay_order, '_worldpay_crypt', TRUE );
-				$worldpaycrypt_b64 		= $worldpay_order->get_meta_data( '_worldpay_crypt' );
+				$worldpaycrypt_b64 		= $order->get_meta( '_worldpay_crypt', TRUE );
 				$worldpaycrypt_b64 		= base64_decode( $worldpaycrypt_b64 );
 				$worldpaycrypt_b64 		= $this->worldpaysimpleXor( $worldpaycrypt_b64, $this->callbackPW );
 				$worldpay_return_values = $this->getTokens( $worldpaycrypt_b64 );
@@ -502,7 +566,7 @@
  		 */
 		function successful_request( $worldpay_return_values ) {
 			
-			$order 	 = new WC_Order( (int) $worldpay_return_values['order'] );
+			$order 	 = new WC_Order( (int) $worldpay_return_values['orderid'] );
 
 			if( $order->needs_payment() ) {
 
@@ -514,7 +578,6 @@
 				 * or the only transction for a none subscription order
 				 */
 				if ( $worldpay_return_values['MC_transactionNumber'] == '1' ) {
-				
 					// Normal transaction at the front end
 		        	$order->payment_complete( $worldpay_return_values['transId'] );
 		        	// Clear the cart, just in case
@@ -524,6 +587,9 @@
 			}
 
         	$url = $this->get_return_url( $order, $worldpay_return_values );
+
+        	// Update order meta
+        	$this->update_order_meta_data ( '_worldpay_response', $worldpay_return_values, $order, $order->get_id() );
 
         	if( $this->addgautm	&& $this->addgautm == 'yes'	) {
 				$url = add_query_arg( array(
@@ -592,7 +658,6 @@
 				$orderNotes .=	'<br />FuturePayID : ' 	. $worldpay_return_values['futurePayId'];
 				$orderNotes .=	'<br /><!-- FUTURE PAY-->';
 				
-				// update_post_meta( $order_id, '_futurepayid', $worldpay_return_values['futurePayId'] );
 				$this->update_order_meta_data ( '_futurepayid', $worldpay_return_values['futurePayId'], $order, $order_id );
 
 			}
@@ -730,9 +795,17 @@
 							// Create renewal order
 							$renewal_order 			= wcs_create_renewal_order( $subscription );
 
+							// Set next payment date
+							$next_payment_date = $subscription->calculate_date( 'next_payment' );
+							$subscription->update_dates( array( 'next_payment' => $next_payment_date ) );
+
+							// Complete the payment
 							$renewal_order->payment_complete( $worldpay_response['transId'] );
+
 							// Clear the cart, just in case
 		        			WC()->cart->empty_cart();
+
+		        			// Update the order notes
 							$renewal_order->add_order_note( __( 'WorldPay subscription payment completed.', 'woocommerce_worlday' ) );
 
 							// Set WorldPay as the payment method (we can't use $renewal_order->set_payment_method() here as it requires an object we don't have)
@@ -907,7 +980,7 @@
 	            $parent_order_id   	= $parent_order->get_id();
 
 				// $futurepayid 		= get_post_meta( $parent_order_id, '_futurepayid', TRUE );
-				$futurepayid 		= $parent_order->get_meta_data( '_futurepayid' );
+				$futurepayid 		= $parent_order->get_meta( '_futurepayid', TRUE );
 
 				$response 			= $this->change_subscription_status( $futurepayid, 'Cancel' );
 
@@ -1099,8 +1172,7 @@
 		function get_transaction_id( $order ) {
 
 			$order_id 		= $order->get_id();
-			// $transaction 	= get_post_meta( $order_id, '_worldpay_response', TRUE );
-			$transaction 	= $order->get_meta_data( '_worldpay_response' );
+			$transaction 	= $order->get_meta( '_worldpay_response', TRUE );
 
 			if( isset( $transaction['transId'] ) ) {
 				return $transaction['transId'];

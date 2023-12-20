@@ -29,7 +29,7 @@ final class WC_Instagram {
 	 *
 	 * @var string
 	 */
-	public $version = '4.5.0';
+	public $version = '4.6.0';
 
 	/**
 	 * Constructor.
@@ -54,7 +54,7 @@ final class WC_Instagram {
 		$this->define( 'WC_INSTAGRAM_PATH', plugin_dir_path( WC_INSTAGRAM_FILE ) );
 		$this->define( 'WC_INSTAGRAM_URL', plugin_dir_url( WC_INSTAGRAM_FILE ) );
 		$this->define( 'WC_INSTAGRAM_BASENAME', plugin_basename( WC_INSTAGRAM_FILE ) );
-		$this->define( 'WC_INSTAGRAM_CATALOGS_PATH', $upload_dir['basedir'] . '/wc-instagram-catalogs' );
+		$this->define( 'WC_INSTAGRAM_CATALOGS_PATH', $upload_dir['basedir'] . '/wc-instagram-catalogs/' );
 	}
 
 	/**
@@ -151,9 +151,12 @@ final class WC_Instagram {
 	 * @since 4.3.1
 	 */
 	public function declare_compatibility() {
-		// Compatible with the 'High-Performance Order Storage' feature.
 		if ( class_exists( '\Automattic\WooCommerce\Utilities\FeaturesUtil' ) ) {
+			// Compatible with the 'High-Performance Order Storage' feature.
 			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', WC_INSTAGRAM_FILE, true );
+
+			// Compatible with the Cart and Checkout blocks.
+			\Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'cart_checkout_blocks', WC_INSTAGRAM_FILE, true );
 		}
 	}
 

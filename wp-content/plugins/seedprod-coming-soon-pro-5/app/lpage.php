@@ -323,9 +323,9 @@ function seedprod_pro_lpage_datatable() {
 			// Format Date
 			//$modified_at = date(get_option('date_format').' '.get_option('time_format'), strtotime($v->post_modified));
 
-			$modified_at = gmdate( 'Y/m/d', strtotime( $v->post_modified ) );
+			$modified_at = gmdate( get_option('date_format'), strtotime( $v->post_modified ) );
 
-			$posted_at = gmdate( 'Y/m/d', strtotime( $v->post_date ) );
+			$posted_at = gmdate( get_option('date_format'), strtotime( $v->post_date ) );
 
 			$url = get_permalink( $v->ID );
 

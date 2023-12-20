@@ -31,17 +31,19 @@ class WC_Instagram_Admin_System_Status {
 	 */
 	public static function output_content() {
 		$data = array(
-			'is_connected'      => wc_instagram_is_connected(),
-			'has_page'          => wc_instagram_has_business_account(),
-			'catalog_permalink' => wc_instagram_get_setting( 'product_catalog_permalink', 'product-catalog/' ),
-			'catalogs'          => wc_instagram_get_product_catalogs( array(), 'objects' ),
-			'catalogs_interval' => wc_instagram_get_setting( 'generate_catalogs_interval', 1 ),
+			'is_connected'               => wc_instagram_is_connected(),
+			'has_page'                   => wc_instagram_has_business_account(),
+			'catalog_permalink'          => wc_instagram_get_setting( 'product_catalog_permalink', 'product-catalog/' ),
+			'catalogs'                   => wc_instagram_get_product_catalogs( array(), 'objects' ),
+			'catalogs_interval'          => wc_instagram_get_setting( 'generate_catalogs_interval', 1 ),
+			'catalog_directory'          => WC_INSTAGRAM_CATALOGS_PATH,
+			'catalog_directory_writable' => (bool) @fopen( WC_INSTAGRAM_CATALOGS_PATH . 'test.log', 'a' ), // phpcs:ignore WordPress.PHP.NoSilencedErrors.Discouraged, WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 		);
 
-		include_once dirname( __FILE__ ) . '/views/html-admin-status-report-settings.php';
+		include_once __DIR__ . '/views/html-admin-status-report-settings.php';
 
 		if ( $data['is_connected'] ) {
-			include_once dirname( __FILE__ ) . '/views/html-admin-status-report-catalogs.php';
+			include_once __DIR__ . '/views/html-admin-status-report-catalogs.php';
 		}
 	}
 }

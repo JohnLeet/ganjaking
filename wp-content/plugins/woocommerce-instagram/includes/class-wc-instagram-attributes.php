@@ -17,14 +17,15 @@ class WC_Instagram_Attributes {
 	 * Gets the meta value of an attribute.
 	 *
 	 * @since 3.7.0
+	 * @since 4.6.0 Renamed parameter `$default` to `$default_value`.
 	 *
-	 * @param int    $attribute_id Attribute ID.
-	 * @param string $key          Meta key.
-	 * @param mixed  $default      Optional. Value if the meta doesn't exist. Default null.
+	 * @param int    $attribute_id  Attribute ID.
+	 * @param string $key           Meta key.
+	 * @param mixed  $default_value Optional. Value if the meta doesn't exist. Default null.
 	 * @return mixed
 	 */
-	public static function get_meta( $attribute_id, $key, $default = null ) {
-		return get_option( self::get_meta_id( $attribute_id, $key ), $default );
+	public static function get_meta( $attribute_id, $key, $default_value = null ) {
+		return get_option( self::get_meta_id( $attribute_id, $key ), $default_value );
 	}
 
 	/**

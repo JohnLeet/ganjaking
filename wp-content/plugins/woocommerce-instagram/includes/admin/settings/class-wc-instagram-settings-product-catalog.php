@@ -201,7 +201,7 @@ class WC_Instagram_Settings_Product_Catalog extends WC_Instagram_Settings_API {
 		$slug_description = sprintf(
 			/* translators: 1: documentation link, 2: arial-label */
 			_x( 'Check the <a href="%1$s" aria-label="%2$s" target="_blank">documentation</a> to learn how to use this URL.', 'setting desc', 'woocommerce-instagram' ),
-			esc_url( 'https://woocommerce.com/document/woocommerce-instagram/' ),
+			esc_url( 'https://woo.com/document/woocommerce-instagram/' ),
 			esc_attr_x( 'View WooCommerce Instagram documentation', 'aria-label: documentation link', 'woocommerce-instagram' )
 		);
 
@@ -700,10 +700,10 @@ class WC_Instagram_Settings_Product_Catalog extends WC_Instagram_Settings_API {
 	 */
 	protected function sanitize_slug_field( $settings ) {
 		// The catalog slug must be unique.
-		$string  = ( ( ! empty( $settings['slug'] ) ? $settings['slug'] : $settings['title'] ) );
+		$text    = ( ( ! empty( $settings['slug'] ) ? $settings['slug'] : $settings['title'] ) );
 		$exclude = ( $this->is_new() ? array() : array( $this->catalog_id ) );
 
-		$settings['slug'] = wc_instagram_generate_product_catalog_slug( $string, $exclude );
+		$settings['slug'] = wc_instagram_generate_product_catalog_slug( $text, $exclude );
 
 		return $settings;
 	}

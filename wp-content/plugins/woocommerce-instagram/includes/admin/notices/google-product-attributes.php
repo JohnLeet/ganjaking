@@ -28,7 +28,7 @@ defined( 'ABSPATH' ) || exit;
 		<?php
 		printf(
 			'<a class="button-secondary docs" href="%1$s" aria-label="%2$s" target="_blank">%3$s</a>',
-			esc_url( 'https://woocommerce.com/document/woocommerce-instagram/' ),
+			esc_url( 'https://woo.com/document/woocommerce-instagram/' ),
 			esc_attr_x( 'View WooCommerce Instagram documentation', 'aria-label: documentation link', 'woocommerce-instagram' ),
 			esc_html__( 'Read more', 'woocommerce-instagram' )
 		);

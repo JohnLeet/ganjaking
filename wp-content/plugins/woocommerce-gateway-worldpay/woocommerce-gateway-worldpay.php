@@ -3,11 +3,11 @@
 Plugin Name: WooCommerce WorldPay Gateway
 Plugin URI: http://woothemes.com/woocommerce/
 Description: Extends WooCommerce. Provides a WorldPay gateway for WooCommerce. Includes basic support for Subscriptions. http://www.worldpay.com.
-Version: 5.1.0
+Version: 5.2.1
 Author: Andrew Benbow
 Author URI: http://www.chromeorange.co.uk
 WC requires at least: 3.0.0
-WC tested up to: 7.4.0
+WC tested up to: 8.3.0
 Woo: 18646:6bc48c9d12dc0c43add4b099665a80b0
 */
 
@@ -33,6 +33,9 @@ Woo: 18646:6bc48c9d12dc0c43add4b099665a80b0
 	https://secure.worldpay.com/wcc/iadmin (https://secure.worldpay.com/wcc/iadmin)
 */
 
+// Blocks
+use Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry;
+
 /**
  * Required functions
  */
@@ -47,7 +50,7 @@ woothemes_queue_update( plugin_basename( __FILE__ ), '6bc48c9d12dc0c43add4b09966
 // Defines
 define( 'WORLDPAYPLUGINPATH', plugin_dir_path( __FILE__ ) );
 define( 'WORLDPAYPLUGINURL', plugin_dir_url( __FILE__ ) );
-define( 'WORLDPAYPLUGINVERSION', '5.1.0' );
+define( 'WORLDPAYPLUGINVERSION', '5.2.1' );
 
 // Load Admin files
 if( is_admin() ) {
@@ -60,12 +63,6 @@ if( is_admin() ) {
  */
 load_plugin_textdomain( 'woocommerce_worlday', false, dirname( plugin_basename( __FILE__ ) ) . '/languages' );
 
-// Support HPOS
-add_action( 'before_woocommerce_init', function() {
-    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
-        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
-    }
-} );
 
 // Init WorldPay Gateway after WooCommerce has loaded
 add_action( 'plugins_loaded', 'init_worldpay_gateway', 0 );
@@ -81,38 +78,43 @@ function init_worldpay_gateway() {
 	 */
 	include('classes/worldpay-form-class.php');
 
-	/**
-	 * Add the Gateway to WooCommerce
-	 */
-	function add_worldpay_form_gateway($methods) {
-		$methods[] = 'WC_Gateway_Worldpay_Form';
-		return $methods;
-	}
+
 	add_filter('woocommerce_payment_gateways', 'add_worldpay_form_gateway' );
-
-	/**
-	 * Include WPG Gateway class
-	 */
-	// include('classes/worldwidepaymentgateway/wpg-class.php');
-
-	/**
-	 * Add the Gateway to WooCommerce
-	 */
-	function add_worldpay_wpg_gateway($methods) {
-		$methods[] = 'WC_Gateway_Worldwide_Payment_Gateway';
-		return $methods;
-	}
-	// add_filter('woocommerce_payment_gateways', 'add_worldpay_wpg_gateway' );
 
 	/**
 	 * Load the widget
 	 */
 	include('classes/class-wc-gateway-worldpay-widget.php');
 
-    // If the site supports Gutenberg Blocks, support the Checkout block
-    if( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) && class_exists( 'WC_Gateway_Worldpay_Form' ) ) {
-        require_once( dirname(__FILE__) . "/classes/blocks/blocks-class.php" );
-        Automattic\WooCommerce\Blocks\Payments\Integrations\Wc_Worldpay_Blocks::register();
-    }
     
 } // END init_worldpay_gateway
+
+/**
+ * Add the Gateway to WooCommerce
+ */
+function add_worldpay_form_gateway($methods) {
+	$methods[] = 'WC_Gateway_Worldpay_Form';
+	return $methods;
+}
+
+// Blocks Support
+add_action( 'woocommerce_blocks_loaded', 'woocommerce_gateway_worldpay_woocommerce_block_support' );
+
+function woocommerce_gateway_worldpay_woocommerce_block_support() {
+	if ( class_exists( 'Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType' ) ) {
+		require_once( dirname(__FILE__) . "/classes/blocks/blocks-class.php" );
+		add_action(
+			'woocommerce_blocks_payment_method_type_registration',
+			function( Automattic\WooCommerce\Blocks\Payments\PaymentMethodRegistry $payment_method_registry ) {
+				$payment_method_registry->register( new WC_Worldpay_Blocks_Support );
+			}
+		);
+	}
+}
+
+// Support HPOS
+add_action( 'before_woocommerce_init', function() {
+    if ( class_exists( \Automattic\WooCommerce\Utilities\FeaturesUtil::class ) ) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility( 'custom_order_tables', __FILE__, true );
+    }
+} );

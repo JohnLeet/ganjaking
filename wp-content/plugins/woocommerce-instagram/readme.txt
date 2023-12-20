@@ -4,17 +4,17 @@ Tags: woocommerce, instagram, hashtag, product, showcase
 Requires PHP: 5.6
 Requires at least: 4.9
 Tested up to: 6.4
-Stable tag: 4.5.0
+Stable tag: 4.6.0
 License: GNU General Public License v3.0
 License URI: http://www.gnu.org/licenses/gpl-3.0.html
 WC requires at least: 3.7
-WC tested up to: 8.2
+WC tested up to: 8.3
 Woo: 260061:ecaa2080668997daf396b8f8a50d891a
 
 == Description ==
 
 Connect your store with Instagram. Upload your product catalog to Instagram and showcase how your customers are using them.
-Visit our [product page](https://woocommerce.com/products/woocommerce-instagram/) for more info.
+Visit our [product page](https://woo.com/products/woocommerce-instagram/) for more info.
 
 == Minimum Requirements ==
 
@@ -29,11 +29,11 @@ Visit our [product page](https://woocommerce.com/products/woocommerce-instagram/
 
 == Documentation & support ==
 
-For help setting up and configuring the extension, please refer to our [user guide](https://woocommerce.com/document/woocommerce-instagram/).
+For help setting up and configuring the extension, please refer to our [user guide](https://woo.com/document/woocommerce-instagram/).
 
 == Changelog ==
 
-Visit our [Changelog](https://woocommerce.com/changelogs/woocommerce-instagram/changelog.txt) and stay up to date on the latest changes.
+Visit our [Changelog](https://woo.com/changelogs/woocommerce-instagram/changelog.txt) and stay up to date on the latest changes.
 
 == Upgrade Notice ==
 

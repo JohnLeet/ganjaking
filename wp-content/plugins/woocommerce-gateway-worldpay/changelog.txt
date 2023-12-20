@@ -1,4 +1,16 @@
 *** WorldPay Changelog ***
+2023.11.22 - version 5.2.1
+ * Make sure "Next Payment Date" is updated after renewal
+ * Fix - missing payment method for blocks when subscription product is in cart
+
+2023.11.20 - version 5.2.0
+ * PHP 8.3 Deprecated functions "Creation of dynamic property"
+ * WC 8.3
+
+2023.08.31 - version 5.1.1
+ * Fix - Call to member function get_meta_data()
+ * Fix - missing security checks column
+
 2023.07.27 - version 5.1.0
  * WC HPOS Suport
  * WC 7.9

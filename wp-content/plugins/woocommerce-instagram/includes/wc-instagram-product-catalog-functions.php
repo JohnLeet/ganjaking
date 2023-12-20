@@ -34,12 +34,13 @@ function wc_instagram_get_product_catalog_rewrite_slug() {
  *
  * @since 3.0.0
  * @since 4.0.0 Added parameters `$args` and `$return`.
+ * @since 4.6.0 Renamed parameter `$return` to `$return_type`.
  *
- * @param array  $args   Optional. The query arguments. Default empty.
- * @param string $return Optional. The returned data. Accepts 'ids', 'objects'. Default empty (Array of data).
+ * @param array  $args        Optional. The query arguments. Default empty.
+ * @param string $return_type Optional. The returned data. Accepts 'ids', 'objects'. Default empty (Array of data).
  * @return array
  */
-function wc_instagram_get_product_catalogs( $args = array(), $return = '' ) {
+function wc_instagram_get_product_catalogs( $args = array(), $return_type = '' ) {
 	$args = wp_parse_args(
 		$args,
 		array(
@@ -61,13 +62,13 @@ function wc_instagram_get_product_catalogs( $args = array(), $return = '' ) {
 
 	$catalog_ids = get_posts( $query_vars );
 
-	if ( 'ids' === $return ) {
+	if ( 'ids' === $return_type ) {
 		return $catalog_ids;
 	}
 
 	$catalogs = array_filter( array_map( 'wc_instagram_get_product_catalog', $catalog_ids ) );
 
-	if ( 'objects' === $return ) {
+	if ( 'objects' === $return_type ) {
 		return $catalogs;
 	}
 
@@ -179,13 +180,14 @@ function wc_instagram_get_product_catalog_url( $the_catalog ) {
  * Generates a unique product catalog slug.
  *
  * @since 3.0.0
+ * @since 4.6.0 Renamed parameter `$string` to `$text`.
  *
- * @param string $string           The string to use for generating the slug.
+ * @param string $text           The text to use for generating the slug.
  * @param array  $exclude_catalogs Optional. An array with the IDs of the catalogs to exclude from the validation. Default empty.
  * @return string
  */
-function wc_instagram_generate_product_catalog_slug( $string, $exclude_catalogs = array() ) {
-	$slug        = sanitize_title( $string );
+function wc_instagram_generate_product_catalog_slug( $text, $exclude_catalogs = array() ) {
+	$slug        = sanitize_title( $text );
 	$unique_slug = $slug;
 	$count       = 2;
 
@@ -193,7 +195,7 @@ function wc_instagram_generate_product_catalog_slug( $string, $exclude_catalogs 
 
 	while ( $catalog_id && ! in_array( $catalog_id, $exclude_catalogs, true ) ) {
 		$unique_slug = $slug . '-' . $count;
-		$count++;
+		++$count;
 
 		$catalog_id = WC_Instagram_Product_Catalog_Factory::get_id_by_slug( $unique_slug );
 	}
@@ -280,18 +282,18 @@ function wc_instagram_get_formatted_product_catalog( $the_catalog, $args = array
  *
  * @since 3.6.1
  *
- * @param mixed  $the_catalog Product catalog object, ID or slug.
- * @param string $default     Optional. The value when there is no tax location. Default empty.
+ * @param mixed  $the_catalog   Product catalog object, ID or slug.
+ * @param string $default_value Optional. The value when there is no tax location. Default empty.
  * @return string
  */
-function wc_instagram_get_formatted_product_catalog_tax_location( $the_catalog, $default = '' ) {
+function wc_instagram_get_formatted_product_catalog_tax_location( $the_catalog, $default_value = '' ) {
 	$catalog = wc_instagram_get_product_catalog( $the_catalog );
 
 	if ( ! $catalog ) {
-		return $default;
+		return $default_value;
 	}
 
-	$tax_location = $default;
+	$tax_location = $default_value;
 
 	if ( $catalog->get_include_tax() ) {
 		$countries    = WC()->countries->get_countries();

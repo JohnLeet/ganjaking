@@ -36,23 +36,15 @@ abstract class WC_Instagram_Data_Store extends WC_Data_Store_WP {
 	protected $meta_key_types = array();
 
 	/**
-	 * Metadata which should exist in the DB, even if empty.
-	 *
-	 * This property was added in WC 3.6.
-	 *
-	 * @var array
-	 */
-	protected $must_exist_meta_keys = array();
-
-	/**
 	 * Helper method that reads all the post meta.
 	 *
 	 * @since 4.0.0
+	 * @since 4.6.0 Renamed parameter `$object` to `$data_object`.
 	 *
-	 * @param WC_Data $object The WP_Data object.
+	 * @param WC_Data $data_object The WP_Data object.
 	 */
-	protected function read_post_meta( $object ) {
-		$object_id = $object->get_id();
+	protected function read_post_meta( $data_object ) {
+		$object_id = $data_object->get_id();
 		$props     = array();
 
 		foreach ( $this->internal_meta_keys as $meta_key ) {
@@ -65,24 +57,25 @@ abstract class WC_Instagram_Data_Store extends WC_Data_Store_WP {
 			$props[ $prop_key ] = get_post_meta( $object_id, $meta_key, true );
 		}
 
-		$object->set_props( $props );
+		$data_object->set_props( $props );
 	}
 
 	/**
 	 * Helper method that updates all the post meta.
 	 *
 	 * @since 4.0.0
+	 * @since 4.6.0 Renamed parameter `$object` to `$data_object`.
 	 *
-	 * @param WC_Data $object The WP_Data object.
+	 * @param WC_Data $data_object The WP_Data object.
 	 */
-	protected function update_post_meta( $object ) {
-		$props_to_update = $this->get_props_to_update( $object, $this->meta_key_to_props, $this->meta_type );
+	protected function update_post_meta( $data_object ) {
+		$props_to_update = $this->get_props_to_update( $data_object, $this->meta_key_to_props, $this->meta_type );
 
 		foreach ( $props_to_update as $meta_key => $prop ) {
-			$value = $object->{"get_$prop"}( 'edit' );
+			$value = $data_object->{"get_$prop"}( 'edit' );
 			$value = $this->sanitize_post_meta( $meta_key, $value );
 
-			$this->update_or_delete_post_meta( $object, $meta_key, $value );
+			$this->update_or_delete_post_meta( $data_object, $meta_key, $value );
 		}
 	}
 
@@ -108,25 +101,5 @@ abstract class WC_Instagram_Data_Store extends WC_Data_Store_WP {
 		}
 
 		return $value;
-	}
-
-	/**
-	 * Update metadata in, or delete it from, the database.
-	 *
-	 * This method was added in WC 3.6.
-	 *
-	 * @param WC_Data $object     The WP_Data object (WC_Coupon for coupons, etc.).
-	 * @param string  $meta_key   Meta key to update.
-	 * @param mixed   $meta_value Value to save.
-	 * @return bool
-	 */
-	protected function update_or_delete_post_meta( $object, $meta_key, $meta_value ) {
-		if ( in_array( $meta_value, array( array(), '' ), true ) && ! in_array( $meta_key, $this->must_exist_meta_keys, true ) ) {
-			$updated = delete_post_meta( $object->get_id(), $meta_key );
-		} else {
-			$updated = update_post_meta( $object->get_id(), $meta_key, $meta_value );
-		}
-
-		return (bool) $updated;
 	}
 }

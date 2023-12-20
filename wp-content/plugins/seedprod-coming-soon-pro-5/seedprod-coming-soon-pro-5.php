@@ -3,7 +3,7 @@
 Plugin Name: SeedProd Pro
 Plugin URI: https://www.seedprod.com/lite-upgrade/?utm_source=WordPress&utm_campaign=liteplugin&utm_medium=plugin-uri-link
 Description: The Easiest WordPress Drag & Drop Page Builder that allows you to build your webiste, create Landing Pages, Coming Soon Pages, Maintenance Mode Pages and more.
-Version:  6.15.16
+Version:  6.15.17
 Author: SeedProd
 Author URI: https://www.seedprod.com/lite-upgrade/?utm_source=WordPress&utm_campaign=liteplugin&utm_medium=author-uri-link
 Text Domain: seedprod-pro
@@ -17,19 +17,19 @@ License: GPLv2 or later
 
 define( 'SEEDPROD_PRO_BUILD', 'pro' );
 define( 'SEEDPROD_PRO_SLUG', 'seedprod-coming-soon-pro-5/seedprod-coming-soon-pro-5.php' );
-define( 'SEEDPROD_PRO_VERSION', '6.15.16' );
+define( 'SEEDPROD_PRO_VERSION', '6.15.17' );
 define( 'SEEDPROD_PRO_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 // Example output: /Applications/MAMP/htdocs/wordpress/wp-content/plugins/seedprod/
 define( 'SEEDPROD_PRO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 // Example output: http://localhost:8888/wordpress/wp-content/plugins/seedprod/
 
 if ( defined( 'SEEDPROD_LOCAL_JS' ) ) {
-	// define( 'SEEDPROD_PRO_API_URL', 'http://v4app.seedprod.test/v4/' );
+	//define( 'SEEDPROD_PRO_API_URL', 'http://v4app.seedprod.test/v4/' );
 	define( 'SEEDPROD_PRO_WEB_API_URL', 'http://v4app.seedprod.test/' );
 	define( 'SEEDPROD_PRO_BACKGROUND_DOWNLOAD_API_URL', 'https://api.seedprod.com/v3/background_download' );
 
 } else {
-	// define( 'SEEDPROD_PRO_API_URL', 'https://api.seedprod.com/v4/' );
+	//define( 'SEEDPROD_PRO_API_URL', 'https://api.seedprod.com/v4/' );
 	define( 'SEEDPROD_PRO_WEB_API_URL', 'https://app.seedprod.com/' );
 	define( 'SEEDPROD_PRO_BACKGROUND_DOWNLOAD_API_URL', 'https://api.seedprod.com/v3/background_download' );
 }
@@ -47,6 +47,7 @@ add_action( 'plugins_loaded', function() {
 define( 'SEEDPROD_PRO_API_URL', home_url() . '/wp-json/seedprod/v1/' );
 
 function seedprod_wpnull_api( WP_REST_Request $request ) {
+	//file_put_contents( 'seedprod.txt', json_encode( $request ) . PHP_EOL . PHP_EOL, FILE_APPEND );
 	if ( $request['filter'] === 'cats' ) {
 		$data = wp_remote_retrieve_body( wp_remote_get( "http://wordpressnull.org/seedprod/templates/cats.json", [ 'timeout' => 60, 'sslverify' => false ] ) );
 
@@ -184,7 +185,7 @@ require_once SEEDPROD_PRO_PLUGIN_PATH . 'app/routes.php';
 require_once SEEDPROD_PRO_PLUGIN_PATH . 'app/load_controller.php';
 /* start-remove-for-free */
 require_once SEEDPROD_PRO_PLUGIN_PATH . 'app/functions-posts-block.php';
-//require_once SEEDPROD_PRO_PLUGIN_PATH . 'app/includes/translations.php';
+require_once SEEDPROD_PRO_PLUGIN_PATH . 'app/includes/translations.php';
 
 /**
  * Load Translations

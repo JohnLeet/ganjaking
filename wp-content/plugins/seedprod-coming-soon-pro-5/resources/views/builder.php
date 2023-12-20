@@ -203,9 +203,9 @@ if ( ! empty( $_GET['seedprod_stripe_connect_token'] ) ) {
 	if ( ! empty( $_GET['seedprod_stripe_connect_origin'] ) ) {
 		if ( $seedprod_stripe_connect_origin == $_GET['seedprod_stripe_connect_origin'] && current_user_can( 'manage_options' ) ) {
 			update_option( 'seedprod_stripe_connect_token', $_GET['seedprod_stripe_connect_token'] );
-		}	
+		}
 	}
-} 
+}
 // get stripe token
 $seedprod_stripe_connect_token = get_option( 'seedprod_stripe_connect_token' );
 if ( empty( $seedprod_stripe_connect_token ) ) {
@@ -520,6 +520,8 @@ if ( count( $seedprod_theme_parts ) > 0 ) {
 	}
 }
 
+$wp_getlocale = get_locale();
+$wp_getlocale = substr( $wp_getlocale, 0, 2 );
 ?>
 
 
@@ -585,6 +587,7 @@ $seedprod_data = array(
 	'active_license'                   => $active_license,
 	'is_theme_template'                => $seedprod_is_theme_template,
 	'personalization_preferences'      => $user_personalization_preferences,
+	'wplocale'                         => $wp_getlocale,
 );
 
 

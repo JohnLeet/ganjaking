@@ -65,8 +65,13 @@
         edit: React.createElement( Content, null ),
         placeOrderButtonLabel: WorldpayLocale['Proceed to Worldpay'],
         canMakePayment: () => true,
-        ariaLabel: label
+        ariaLabel: label,
+      supports: {
+        features: settings.supports ?? [],
+      },
   };
+
+  console.log( settings.supports );
 
   // Register Worldpay
   registerPaymentMethod( WorldpayPaymentMethod );

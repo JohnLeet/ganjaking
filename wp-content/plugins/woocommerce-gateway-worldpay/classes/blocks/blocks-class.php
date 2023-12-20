@@ -1,80 +1,92 @@
 <?php
+use Automattic\WooCommerce\Blocks\Payments\Integrations\AbstractPaymentMethodType;
+
 /**
- * Worldpay payment gateway implementation for Gutenberg Blocks
+ * Worldpay payment method integration
+ *
  */
+final class WC_Worldpay_Blocks_Support extends AbstractPaymentMethodType {
+    /**
+     * Name of the payment method.
+     *
+     * @var string
+     */
+    protected $name = 'worldpay';
 
-namespace Automattic\WooCommerce\Blocks\Payments\Integrations;
-
-class Wc_Worldpay_Blocks extends AbstractPaymentMethodType {
-    
-    private $localized = 0;
-	protected $name    = 'worldpay';
-
-	public function initialize() {
-		$this->settings = get_option( 'woocommerce_worldpay_settings' );
+    /**
+     * Initializes the payment method type.
+     */
+    public function initialize() {
+        $this->settings = get_option( 'woocommerce_worldpay_settings', [] );
         $this->icon = apply_filters( 'wc_worldpay_icon', '' );
-	}
-
-    // Register this payment method
-    public static function register() {
-        add_action( 'woocommerce_blocks_payment_method_type_registration', 
-                    function ( $registry ) {
-                        $registry->register( new static() );
-        });
     }
 
-	public function is_active() {
-		return filter_var( $this->get_setting( 'enabled', false ), FILTER_VALIDATE_BOOLEAN );
-	}
+    /**
+     * Returns if this payment method should be active. If false, the scripts will not be enqueued.
+     *
+     * @return boolean
+     */
+    public function is_active() {
+        $payment_gateways_class   = WC()->payment_gateways();
+        $payment_gateways         = $payment_gateways_class->payment_gateways();
 
-	public function get_payment_method_script_handles() {
+        return $payment_gateways['worldpay']->is_available();
+    }
 
-        $path           = WORLDPAYPLUGINURL . 'classes/blocks/js/wc-payment-method-worldpay.js';
-        $handle         = 'wc-payment-method-worldpay';
-        $dependencies   = array( 'wp-hooks' );
-
-        wp_register_script( $handle, $path, $dependencies, WORLDPAYPLUGINVERSION, TRUE );
-       
-        if (!$this->localized) {
-
-            $strings = array( 
-                    'Pay via Worldpay'    => __('Pay via Worldpay', 'woocommerce_worlday'),
-                    'Worldpay'            => __('Worldpay', 'woocommerce_worlday') 
-                );
-
-            wp_localize_script('wc-payment-method-worldpay', 'WorldpayLocale', $strings);
-            $this->localized = 1;
-
+    /**
+     * Returns an array of scripts/handles to be registered for this payment method.
+     *
+     * @return array
+     */
+    public function get_payment_method_script_handles() {
+        $asset_path   = WORLDPAYPLUGINURL . 'classes/blocks/js/index.asset.php';
+        $version      = WORLDPAYPLUGINVERSION;
+        $dependencies = [];
+        if ( file_exists( $asset_path ) ) {
+            $asset        = require $asset_path;
+            $version      = is_array( $asset ) && isset( $asset['version'] )
+                ? $asset['version']
+                : $version;
+            $dependencies = is_array( $asset ) && isset( $asset['dependencies'] )
+                ? $asset['dependencies']
+                : $dependencies;
         }
-
-		return array( 'wc-payment-method-worldpay' );
-	}
-
-	public function get_payment_method_data() {
-
-        $args = array(
-            'title'           => $this->get_title(),
-            'description'     => $this->get_description(),
-            'iconsrc'         => $this->get_icons(),
-            'supports'        => $this->get_supports(),
-            'poweredbywp'     => $this->get_poweredby(),
-            'testmode'        => $this->get_testmode(),
-            'testcard'        => $this->get_testcard(),
+        wp_register_script(
+            'wc-worldpay-blocks-integration',
+            WORLDPAYPLUGINURL . 'classes/blocks/js/index.js',
+            $dependencies,
+            $version,
+            true
         );
-
-        return $args;
-
-	}
-
-    private function get_title() {
-        return isset( $this->settings['title'] ) ? $this->settings['title'] : __( 'Pay with Worldpay', 'woocommerce_worlday' );
+        wp_set_script_translations(
+            'wc-worldpay-blocks-integration',
+            'woocommerce-gateway-worldpay'
+        );
+        return [ 'wc-worldpay-blocks-integration' ];
     }
 
-    private function get_description() {
+    /**
+     * Returns an array of key=>value pairs of data made available to the payment methods script.
+     *
+     * @return array
+     */
+    public function get_payment_method_data() {
+        return [
+            'title'       => $this->get_setting( 'title' ),
+            'description' => $this->get_setting( 'description' ),
+            'supports'    => $this->get_supported_features(),
+            'logo_url'    => WORLDPAYPLUGINURL . 'images/poweredByWorldPay.png',
+        ];
+    }
 
-        $description = isset( $this->settings['description'] ) ? $this->settings['description'] : __( 'Pay with Worldpay', 'woocommerce_worlday' );
-
-        return $description;
+    /**
+     * Returns an array of supported features.
+     *
+     * @return string[]
+     */
+    public function get_supported_features() {
+        $payment_gateways = WC()->payment_gateways->payment_gateways();
+        return $payment_gateways['worldpay']->supports;
     }
 
     private function get_icons() {
@@ -114,59 +126,6 @@ class Wc_Worldpay_Blocks extends AbstractPaymentMethodType {
         }
 
         return $icons_src;
-    }
-
-    private function get_supports() {
-
-        $dynamiccallback = isset( $this->settings['dynamiccallback'] ) && $this->settings['dynamiccallback'] == 'yes' ? true : false;
-        $remoteid        = isset( $this->settings['remoteid'] ) ? $this->settings['remoteid'] : false;
-
-        if( $dynamiccallback || !$remoteid ) {
-
-            return array(
-                'products',
-                'refunds'
-            );
-
-        } else {
-
-            return array(
-                'products',
-                'subscriptions',
-                'gateway_scheduled_payments',
-                'subscription_cancellation',
-                'refunds',
-                'subscription_amount_changes'
-            );  
-
-        }
-
-    }
-
-    private function get_poweredby() {
-        return esc_url( WORLDPAYPLUGINURL . 'images/poweredByWorldPay.png' );
-    }
-
-    private function get_testmode() {
-
-        $return = NULL;
-        if ( $this->settings['status'] == 'testing' ) {
-            $return = __( 'TEST MODE ENABLED.', 'woocommerce_worlday' );
-            $return = trim( $return );
-        }
-
-        return $return;
-    }
-
-    private function get_testcard() {
-
-        $return = NULL;
-        if ( $this->settings['status'] == 'testing' ) {
-            $return = __( 'In test mode, you can use Visa card number 4111111111111111 with any CVC and a valid expiration date.', 'woocommerce_worlday' );
-            $return = trim( $return );
-        }
-
-        return $return;
     }
 
 }

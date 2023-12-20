@@ -47,7 +47,7 @@ class WC_Instagram_Product_Catalog_Item {
 		$product = wc_instagram_get_product( $the_product );
 
 		if ( ! $product ) {
-			throw new Exception( _x( 'Invalid product.', 'exception message', 'woocommerce-instagram' ) );
+			throw new Exception( esc_html_x( 'Invalid product.', 'exception message', 'woocommerce-instagram' ) );
 		}
 
 		$this->product = $product;
@@ -478,12 +478,13 @@ class WC_Instagram_Product_Catalog_Item {
 	 * Parses the format string and replaces the placeholders by the product data.
 	 *
 	 * @since 3.0.0
+	 * @since 4.6.0 Renamed parameter `$default` to `$default_value`.
 	 *
-	 * @param string $format  The format to parse.
-	 * @param mixed  $default Optional. The default value. Default empty.
+	 * @param string $format        The format to parse.
+	 * @param mixed  $default_value Optional. The default value. Default empty.
 	 * @return string
 	 */
-	protected function parse_format( $format, $default = '' ) {
+	protected function parse_format( $format, $default_value = '' ) {
 		$value = str_replace(
 			array(
 				'{product_id}',
@@ -499,7 +500,7 @@ class WC_Instagram_Product_Catalog_Item {
 		);
 
 		if ( ! $value ) {
-			$value = $default;
+			$value = $default_value;
 		}
 
 		/**
@@ -507,11 +508,11 @@ class WC_Instagram_Product_Catalog_Item {
 		 *
 		 * @since 3.0.0
 		 *
-		 * @param string     $value   The value of the format string.
-		 * @param string     $format  The format to parse.
-		 * @param mixed      $default The default value.
-		 * @param WC_Product $product Product object.
+		 * @param string     $value         The value of the format string.
+		 * @param string     $format        The format to parse.
+		 * @param mixed      $default_value The default value.
+		 * @param WC_Product $product       Product object.
 		 */
-		return apply_filters( 'wc_instagram_product_parse_format', $value, $format, $value, $this->get_product() );
+		return apply_filters( 'wc_instagram_product_parse_format', $value, $format, $default_value, $this->get_product() );
 	}
 }

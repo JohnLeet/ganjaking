@@ -78,7 +78,7 @@ class WC_Instagram_Product_Catalog_File {
 			$filename = "{$context}-{$filename}";
 		}
 
-		$filename = WC_INSTAGRAM_CATALOGS_PATH . '/' . $filename;
+		$filename = WC_INSTAGRAM_CATALOGS_PATH . $filename;
 
 		/**
 		 * Filters the catalog filename.
@@ -149,7 +149,7 @@ class WC_Instagram_Product_Catalog_File {
 	 */
 	public function open( $mode ) {
 		if ( ! $this->file ) {
-			$this->file = fopen( $this->get_filename( $this->context ), $mode ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+			$this->file = fopen( $this->get_filename( $this->context ), $mode ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 		}
 
 		return $this->file;
@@ -173,7 +173,7 @@ class WC_Instagram_Product_Catalog_File {
 			$this->open( 'a' );
 		}
 
-		return fwrite( $this->file, $content ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fwrite
+		return fwrite( $this->file, $content ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fwrite
 	}
 
 	/**
@@ -188,7 +188,7 @@ class WC_Instagram_Product_Catalog_File {
 			return false;
 		}
 
-		return fclose( $this->file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+		return fclose( $this->file ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 	}
 
 	/**
@@ -244,7 +244,7 @@ class WC_Instagram_Product_Catalog_File {
 			return true;
 		}
 
-		return rename( $this->get_filename( $this->context ), $this->get_filename() );
+		return rename( $this->get_filename( $this->context ), $this->get_filename() ); // phpcs:ignore WordPress.WP.AlternativeFunctions.rename_rename
 	}
 
 	/**
@@ -318,7 +318,7 @@ class WC_Instagram_Product_Catalog_File {
 	 * @return bool
 	 */
 	protected function delete_file( $filename ) {
-		return ( file_exists( $filename ) && unlink( $filename ) );
+		return ( file_exists( $filename ) && unlink( $filename ) ); // phpcs:ignore WordPress.WP.AlternativeFunctions.unlink_unlink
 	}
 
 	/**

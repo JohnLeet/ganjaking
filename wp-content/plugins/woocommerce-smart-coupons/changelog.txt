@@ -1,5 +1,31 @@
 *** WooCommerce Smart Coupons Changelog ***
 
+2023.12.08 - version 8.11.0
+* New: WordPress 6.4.2 compatible
+* Fix: Coupon applied via Coupon Shareable link was not reflecting in Side Cart [WooCommerce Side Cart Premium by XootiX]
+* Fix: Exponential notation in custom price was not getting processed correctly for store credit of any amount, causing generation of store credit of higher value
+* Fix: Undefined variable: $calculated_product_price
+* Update: POT, PO & MO file
+
+2023.12.02 - version 8.10.0
+* Update: Use native WooCommerce hook 'woocommerce_loop_add_to_cart_link' to replace 'Add to cart' button in 'loop' (archive pages like 'shop' page)
+* Update: Replace 'woocommerce.com' with 'woo.com'
+* Update: POT, PO & MO file
+
+2023.11.22 - version 8.9.0
+* New: WordPress 6.4.1 compatible
+* New: WooCommerce 8.2.2 compatible
+* Fix: Auto apply does not work with WooCommerce Blocks
+* Fix: 'Internal server error' during renewal that uses store credit [WooCommerce Subscriptions]
+* Fix: Applied Store Credit amount shows in multiples in Cart & Checkout
+* Fix: Call to undefined method WC_Subscriptions_Plugin::get_library_version
+* Update: Add help text in empty 'Generated coupons' metabox on the Order edit admin page
+* Update: POT file
+
+2023.11.06 - version 8.8.0
+* New: Feature to 'Regenerate' and/or 'Resend' coupons from order edit admin page 
+* Update: POT file
+
 2023.10.27 - version 8.7.0
 * New: WordPress 6.3.2 compatible
 * New: WooCommerce 8.2.1 compatible
@@ -66,7 +92,7 @@
 * Fix: Refund amount blocked on the order edit page, even when store credit is not applied to that order
 * Fix: When bulk generating coupons with multiple values for 'Exclude products', only the first value is getting saved
 * Fix: When importing coupons with multiple values for 'Exclude products' via CSV file, only the first value is getting saved
-* Fix: 'Fixed cart discount' coupon amount changed when a coupon is applied to an order and when the plugin [WooCommerce Multi-Currency](https://woocommerce.com/products/multi-currency/) OR the plugin [Price Based on Country for WooCommerce](https://wordpress.org/plugins/woocommerce-product-price-based-on-countries/) is active
+* Fix: 'Fixed cart discount' coupon amount changed when a coupon is applied to an order and when the plugin [WooCommerce Multi-Currency](https://woo.com/products/multi-currency/) OR the plugin [Price Based on Country for WooCommerce](https://wordpress.org/plugins/woocommerce-product-price-based-on-countries/) is active
 * Update: POT file
 
 2023.06.16 - version 8.0.0

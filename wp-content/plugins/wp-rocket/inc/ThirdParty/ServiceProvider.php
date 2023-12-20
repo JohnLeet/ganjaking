@@ -36,6 +36,7 @@ use WP_Rocket\ThirdParty\Plugins\UnlimitedElements;
 use WP_Rocket\ThirdParty\Plugins\CDN\{Cloudflare, CloudflareFacade};
 use WP_Rocket\ThirdParty\Plugins\Jetpack;
 use WP_Rocket\ThirdParty\Plugins\WPGeotargeting;
+use WP_Rocket\ThirdParty\Plugins\ContactForm7;
 use WP_Rocket\ThirdParty\Plugins\SEO\RankMathSEO;
 use WP_Rocket\ThirdParty\Plugins\SEO\AllInOneSEOPack;
 use WP_Rocket\ThirdParty\Plugins\SEO\SEOPress;
@@ -43,6 +44,7 @@ use WP_Rocket\ThirdParty\Plugins\SEO\TheSEOFramework;
 use WP_Rocket\ThirdParty\Plugins\Optimization\RocketLazyLoad;
 use WP_Rocket\ThirdParty\Plugins\Optimization\Perfmatters;
 use WP_Rocket\ThirdParty\Plugins\Optimization\RapidLoad;
+use WP_Rocket\ThirdParty\Plugins\I18n\Weglot;
 
 /**
  * Service provider for WP Rocket third party compatibility
@@ -101,6 +103,8 @@ class ServiceProvider extends AbstractServiceProvider {
 		'rapidload',
 		'translatepress',
 		'wpgeotargeting',
+		'weglot',
+		'contactform7',
 	];
 
 	/**
@@ -255,7 +259,10 @@ class ServiceProvider extends AbstractServiceProvider {
 			->addTag( 'common_subscriber' );
 		$this->getContainer()
 			->share( 'rapidload', RapidLoad::class );
+		$this->getContainer()
+			->share( 'weglot', Weglot::class );
 		$this->getContainer()->share( 'translatepress', TranslatePress::class );
 		$this->getContainer()->share( 'wpgeotargeting', WPGeotargeting::class );
+		$this->getContainer()->share( 'contactform7', ContactForm7::class );
 	}
 }

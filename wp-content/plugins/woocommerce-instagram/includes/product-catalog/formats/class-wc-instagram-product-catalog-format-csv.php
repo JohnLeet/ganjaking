@@ -44,7 +44,7 @@ class WC_Instagram_Product_Catalog_Format_CSV extends WC_Instagram_Product_Catal
 			fputcsv( $output, $this->get_formatted_item( $product_item ) );
 		}
 
-		fclose( $output ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+		fclose( $output ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 
 		return ob_get_clean();
 	}
@@ -140,14 +140,14 @@ class WC_Instagram_Product_Catalog_Format_CSV extends WC_Instagram_Product_Catal
 	 * @return string
 	 */
 	protected function format_csv( $fields ) {
-		$handle = fopen( 'php://temp', 'r+b' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fopen
+		$handle = fopen( 'php://temp', 'r+b' ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fopen
 
 		fputcsv( $handle, $fields );
 		rewind( $handle );
 
 		$string = stream_get_contents( $handle );
 
-		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_read_fclose
+		fclose( $handle ); // phpcs:ignore WordPress.WP.AlternativeFunctions.file_system_operations_fclose
 
 		return $string;
 	}
